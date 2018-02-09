@@ -14,7 +14,7 @@ def group_tree(organizations=[], type_='organization'):
 
 def group_tree_filter(organizations, group_tree_list, highlight=False):
     # this method leaves only the sections of the tree corresponding to the list
-    # since it was developed for the users, all children organizations from the 
+    # since it was developed for the users, all children organizations from the
     # organizations in the list are included
     def traverse_select_highlighted(group_tree, selection=[], highlight=False):
         # add highlighted branches to the filtered tree
