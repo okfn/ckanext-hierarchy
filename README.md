@@ -51,10 +51,22 @@ the short name or acronym (more convenient for  display).
 }
 ```
 
-
-
 TODO:
 * make the trees prettier with JSTree
+
+## Configuration
+
+With the extension following options could be configured:
+
+```ini
+#   Group or organization type to use for building the hierarchy.
+#   Defaults to "organization"
+hierarchy.parent_group_type = organization
+
+#   Only allow parent groups that the user belongs to.
+#   Defaults to False
+hierarchy.parent_group_should_belong_to_user = False
+```
 
 ## Compatibility
 

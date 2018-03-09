@@ -64,6 +64,7 @@ class HierarchyDisplay(p.SingletonPlugin):
                 'group_tree_get_longname': helpers.group_tree_get_longname,
                 'group_tree_highlight': helpers.group_tree_highlight,
                 'get_allowable_parent_groups': helpers.get_allowable_parent_groups,
+                'is_top_level_parent_group_included': helpers.is_top_level_parent_group_included,
                 'is_include_children_selected': helpers.is_include_children_selected,
                 }
 
