@@ -1,4 +1,5 @@
 import ckan.plugins as p
+from ckan.common import config
 from ckanext.hierarchy.logic import action
 from ckanext.hierarchy import helpers
 from ckan.lib.plugins import DefaultOrganizationForm
@@ -113,20 +114,21 @@ class HierarchyDisplay(p.SingletonPlugin):
                         c.include_children_selected = True
                     continue
                 base_query += [item]
+
         if c.include_children_selected:
-            # add all the children organizations in an 'or' join
+            search_params['q'] = " ".join(base_query)
+            # update filter query
             children = _children_name_list(helpers.group_tree_section(c.group_dict.get('id'), include_parents=False, include_siblings=False).get('children',[]))
-            if(children):
-                search_params['q'] = " ".join(base_query)
-                if (len(search_params['q'].strip())>0):
-                    search_params['q'] += ' AND '
-                search_params['q'] += '(organization:%s' % c.group_dict.get('name')
+            if children:
+                search_params['fq'] = 'organization:%s' % c.group_dict.get('name')
                 for name in children:
                     if name:
-                        search_params['q'] += ' OR organization:%s' %  name
-                search_params['q'] += ")"
+                        search_params['fq'] += ' OR organization:%s' %  name
             # add it back to fields
             c.fields += [('include_children','True')]
+            # remove from facets
+            if 'include_children' in c.fields_grouped:
+                del c.fields_grouped['include_children']
 
         return search_params
 

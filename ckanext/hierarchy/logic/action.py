@@ -54,7 +54,7 @@ def group_tree_section(context, data_dict):
     else:
         section_subtree = _group_tree_branch(group, highlight_group_name=group.name,
                                              type=group_type)
-        return _nest_group_tree_list(group.get_parent_group_hierarchy(type=group_type), 
+        return _nest_group_tree_list(group.get_parent_group_hierarchy(type=group_type),
                                      section_subtree)
 
 def _nest_group_tree_list(group_tree_list, group_tree_leaf):

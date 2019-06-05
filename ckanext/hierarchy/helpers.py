@@ -5,9 +5,10 @@ from ckan.common import c, config, request
 log = logging.getLogger(__name__)
 
 
-def group_tree(organizations=[], type_='organization'):
+def group_tree(organizations=[], type_=None):
+    if type_ is None:
+        type_ = config.get('hierarchy.parent_group_type', 'organization')
     full_tree_list = p.toolkit.get_action('group_tree')({}, {'type': type_})
-
     if not organizations:
         return full_tree_list
     else:
@@ -40,25 +41,34 @@ def group_tree_filter(organizations, group_tree_list, highlight=False):
     return filtered_tree
 
 
-def group_tree_section(id_, type_='organization', include_parents=True, include_siblings=True):
+def group_tree_section(id_, type_=None, include_parents=True, include_siblings=True):
+    if type_ is None:
+        type_ = config.get('hierarchy.parent_group_type', 'organization')
     return p.toolkit.get_action('group_tree_section')(
         {'include_parents':include_parents, 'include_siblings':include_siblings}, {'id': id_, 'type': type_,})
 
-def group_tree_parents(id_, type_='organization'):
-     tree_node =  p.toolkit.get_action('organization_show')({},{'id':id_})
-     if (tree_node['groups']):
-         parent_id = tree_node['groups'][0]['name']
-         parent_node =  p.toolkit.get_action('organization_show')({},{'id':parent_id})
-         return group_tree_parents(parent_id) + [parent_node]
-     else:
-         return []
 
-def group_tree_get_longname(id_, default="", type_='organization'):
-     tree_node =  p.toolkit.get_action('organization_show')({},{'id':id_})
-     longname = tree_node.get("longname", default)
-     if not longname:
-         return default
-     return longname
+def group_tree_parents(id_, type_=None):
+    if type_ is None:
+        type_ = config.get('hierarchy.parent_group_type', 'organization')
+    tree_node =  p.toolkit.get_action('organization_show')({},{'id':id_})
+    if (tree_node['groups']):
+        parent_id = tree_node['groups'][0]['name']
+        parent_node =  p.toolkit.get_action('organization_show')({},{'id':parent_id})
+        return group_tree_parents(parent_id) + [parent_node]
+    else:
+        return []
+
+
+def group_tree_get_longname(id_, default="", type_=None):
+    if type_ is None:
+        type_ = config.get('hierarchy.parent_group_type', 'organization')
+    tree_node =  p.toolkit.get_action('organization_show')({},{'id':id_})
+    longname = tree_node.get("longname", default)
+    if not longname:
+        return default
+    return longname
+
 
 def group_tree_highlight(organizations, group_tree_list):
 
