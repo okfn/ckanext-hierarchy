@@ -31,7 +31,7 @@ class TestHelpers(test_helpers.FunctionalTestBase):
             [self.org1['name'], self.org2['name']]
         )
 
-    @test_helpers.change_config('hierarchy.parent_group_type', 'fancy-type')
+    @test_helpers.change_config('hierarchy.default_parent_group_type', 'fancy-type')
     def test_get_allowable_parent_groups_custom_group_type(self):
         eq(
             [org.name for org in get_allowable_parent_groups('org1')],
@@ -46,8 +46,8 @@ class TestHelpers(test_helpers.FunctionalTestBase):
             [self.fancy_org1['name'], self.fancy_org2['name']]
         )
 
-    @test_helpers.change_config('hierarchy.parent_group_should_belong_to_user', True)
-    def test_get_allowable_parent_groups_parent_group_should_belong_to_user(self):
+    @test_helpers.change_config('hierarchy.user_must_be_in_parent_group', True)
+    def test_get_allowable_parent_groups_user_must_be_in_parent_group(self):
         user = factories.User()
         userobj = model.User.get(user['name'])
 

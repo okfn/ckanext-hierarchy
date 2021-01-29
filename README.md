@@ -76,12 +76,12 @@ TODO:
 With the extension following options can be configured:
 
 ```ini
-#   Group or organization type to use for building the hierarchy.
+#   Default group or organization type to use for the hierarchy
 #   Defaults to "organization"
-hierarchy.parent_group_type = organization
-#   Only allow parent groups that the user belongs to.
+hierarchy.default_parent_group_type = organization
+#   Only allow the user to create a child group if they are a member of the parent.
 #   Defaults to False
-hierarchy.parent_group_should_belong_to_user = False
+hierarchy.user_must_be_in_parent_group = False
 ```
 
 ## Requirements

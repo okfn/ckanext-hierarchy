@@ -6,7 +6,7 @@ log = logging.getLogger(__name__)
 
 def group_tree(organizations=[], type_=None):
     if type_ is None:
-        type_ = p.toolkit.config.get('hierarchy.parent_group_type', 'organization')
+        type_ = p.toolkit.config.get('hierarchy.default_parent_group_type', 'organization')
     full_tree_list = p.toolkit.get_action('group_tree')({}, {'type': type_})
 
     if not organizations:
@@ -44,7 +44,7 @@ def group_tree_filter(organizations, group_tree_list, highlight=False):
 def group_tree_section(id_, type_=None, include_parents=True,
                        include_siblings=True):
     if type_ is None:
-        type_ = p.toolkit.config.get('hierarchy.parent_group_type', 'organization')
+        type_ = p.toolkit.config.get('hierarchy.default_parent_group_type', 'organization')
     return p.toolkit.get_action('group_tree_section')(
         {'include_parents': include_parents,
          'include_siblings': include_siblings},
@@ -53,7 +53,7 @@ def group_tree_section(id_, type_=None, include_parents=True,
 
 def group_tree_parents(id_, type_=None):
     if type_ is None:
-        type_ = p.toolkit.config.get('hierarchy.parent_group_type', 'organization')
+        type_ = p.toolkit.config.get('hierarchy.default_parent_group_type', 'organization')
     tree_node = p.toolkit.get_action('organization_show')({}, {'id': id_})
     if (tree_node['groups']):
         parent_id = tree_node['groups'][0]['name']
@@ -66,7 +66,7 @@ def group_tree_parents(id_, type_=None):
 
 def group_tree_get_longname(id_, default="", type_=None):
     if type_ is None:
-        type_ = p.toolkit.config.get('hierarchy.parent_group_type', 'organization')
+        type_ = p.toolkit.config.get('hierarchy.default_parent_group_type', 'organization')
     tree_node = p.toolkit.get_action('organization_show')({}, {'id': id_})
     longname = tree_node.get("longname", default)
     if not longname:
@@ -93,9 +93,9 @@ def group_tree_highlight(organizations, group_tree_list):
 def get_allowable_parent_groups(group_id):
 
     # Get config
-    PARENT_GROUP_TYPE = p.toolkit.config.get('hierarchy.parent_group_type', 'organization')
-    PARENT_GROUP_SHOULD_BELONG_TO_USER = p.toolkit.asbool(
-        p.toolkit.config.get('hierarchy.parent_group_should_belong_to_user', False))
+    PARENT_GROUP_TYPE = p.toolkit.config.get('hierarchy.default_parent_group_type', 'organization')
+    USER_MUST_BE_IN_PARENT_GROUP = p.toolkit.asbool(
+        p.toolkit.config.get('hierarchy.user_must_be_in_parent_group', False))
 
     # Get groups
     if group_id:
@@ -107,7 +107,7 @@ def get_allowable_parent_groups(group_id):
             group_type=PARENT_GROUP_TYPE)
 
     # Filter by user
-    if PARENT_GROUP_SHOULD_BELONG_TO_USER:
+    if USER_MUST_BE_IN_PARENT_GROUP:
         user_orgs = p.toolkit.get_action('organization_list_for_user')({}, {})
 
         def predicate(group):
@@ -123,11 +123,11 @@ def get_allowable_parent_groups(group_id):
 def is_top_level_parent_group_included():
 
     # Get config
-    PARENT_GROUP_SHOULD_BELONG_TO_USER = p.toolkit.asbool(
-        p.toolkit.config.get('hierarchy.parent_group_should_belong_to_user', False))
+    USER_MUST_BE_IN_PARENT_GROUP = p.toolkit.asbool(
+        p.toolkit.config.get('hierarchy.user_must_be_in_parent_group', False))
 
     # Include based on config
-    if not PARENT_GROUP_SHOULD_BELONG_TO_USER:
+    if not USER_MUST_BE_IN_PARENT_GROUP:
         return True
 
     # Include for sysadmin
