@@ -1,9 +1,13 @@
+import logging
 import ckan.plugins as p
 import ckan.model as model
-from ckan.common import request
+from ckan.common import c, config, request
+log = logging.getLogger(__name__)
 
 
-def group_tree(organizations=[], type_='organization'):
+def group_tree(organizations=[], type_=None):
+    if type_ is None:
+        type_ = config.get('hierarchy.parent_group_type', 'organization')
     full_tree_list = p.toolkit.get_action('group_tree')({}, {'type': type_})
 
     if not organizations:
@@ -38,15 +42,19 @@ def group_tree_filter(organizations, group_tree_list, highlight=False):
     return filtered_tree
 
 
-def group_tree_section(id_, type_='organization', include_parents=True,
+def group_tree_section(id_, type_=None, include_parents=True,
                        include_siblings=True):
+    if type_ is None:
+        type_ = config.get('hierarchy.parent_group_type', 'organization')
     return p.toolkit.get_action('group_tree_section')(
         {'include_parents': include_parents,
          'include_siblings': include_siblings},
         {'id': id_, 'type': type_, })
 
 
-def group_tree_parents(id_, type_='organization'):
+def group_tree_parents(id_, type_=None):
+    if type_ is None:
+        type_ = config.get('hierarchy.parent_group_type', 'organization')
     tree_node = p.toolkit.get_action('organization_show')({}, {'id': id_})
     if (tree_node['groups']):
         parent_id = tree_node['groups'][0]['name']
@@ -57,7 +65,9 @@ def group_tree_parents(id_, type_='organization'):
         return []
 
 
-def group_tree_get_longname(id_, default="", type_='organization'):
+def group_tree_get_longname(id_, default="", type_=None):
+    if type_ is None:
+        type_ = config.get('hierarchy.parent_group_type', 'organization')
     tree_node = p.toolkit.get_action('organization_show')({}, {'id': id_})
     longname = tree_node.get("longname", default)
     if not longname:
@@ -82,14 +92,50 @@ def group_tree_highlight(organizations, group_tree_list):
 
 
 def get_allowable_parent_groups(group_id):
+
+    # Get config
+    PARENT_GROUP_TYPE = config.get('hierarchy.parent_group_type', 'organization')
+    PARENT_GROUP_SHOULD_BELONG_TO_USER = p.toolkit.asbool(
+        config.get('hierarchy.parent_group_should_belong_to_user', False))
+
+    # Get groups
     if group_id:
         group = model.Group.get(group_id)
         allowable_parent_groups = \
-            group.groups_allowed_to_be_its_parent(type='organization')
+            group.groups_allowed_to_be_its_parent(type=group.type)
     else:
         allowable_parent_groups = model.Group.all(
-            group_type='organization')
+            group_type=PARENT_GROUP_TYPE)
+
+    # Filter by user
+    if PARENT_GROUP_SHOULD_BELONG_TO_USER:
+        user_orgs = p.toolkit.get_action('organization_list_for_user')({}, {})
+
+        def predicate(group):
+            for user_org in user_orgs:
+                if user_org['id'] == group.id:
+                    return True
+            return False
+        allowable_parent_groups = filter(predicate, allowable_parent_groups)
+
     return allowable_parent_groups
+
+
+def is_top_level_parent_group_included():
+
+    # Get config
+    PARENT_GROUP_SHOULD_BELONG_TO_USER = p.toolkit.asbool(
+        config.get('hierarchy.parent_group_should_belong_to_user', False))
+
+    # Include based on config
+    if not PARENT_GROUP_SHOULD_BELONG_TO_USER:
+        return True
+
+    # Include for sysadmin
+    if c.userobj.sysadmin:
+        return True
+
+    return False
 
 
 def is_include_children_selected(fields):
